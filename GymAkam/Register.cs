@@ -41,7 +41,7 @@ namespace GymAkam
             {
                 try
                 {
-                    string query = "INSERT INTO Cliente (Nombre, Apellido, FechaNacimiento, Genero, Telefono, Direccion, FechadePago, Lesiones) VALUES (@Nombre, @Apellido, @FechaNacimiento, @Genero, @Telefono, @Direccion, @FechadePago, @Lesiones)";
+                    string query = "INSERT INTO Cliente (Nombre, Apellido,DNI, FechaNacimiento, Genero, Telefono, Direccion, FechadePago, Lesiones) VALUES (@Nombre, @Apellido, @FechaNacimiento, @Genero, @Telefono, @Direccion, @FechadePago, @Lesiones)";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -51,7 +51,7 @@ namespace GymAkam
                         command.Parameters.AddWithValue("@Genero", txt_genre.Text);
                         command.Parameters.AddWithValue("@Telefono", txt_phone.Text);
                         command.Parameters.AddWithValue("@Direccion", txt_address.Text);
-                        command.Parameters.AddWithValue("@FechadePago", DateTime.Now.Day);
+                        command.Parameters.AddWithValue("@FechadePago", DateTime.Now);
                         command.Parameters.AddWithValue("@Lesiones", txt_injury.Text);
 
                         connection.Open();

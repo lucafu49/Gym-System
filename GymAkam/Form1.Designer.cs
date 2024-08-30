@@ -30,6 +30,7 @@
         {
             this.btn_register = new System.Windows.Forms.Button();
             this.btn_renew = new System.Windows.Forms.Button();
+            this.btn_paymentType = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btn_register
@@ -52,11 +53,22 @@
             this.btn_renew.UseVisualStyleBackColor = true;
             this.btn_renew.Click += new System.EventHandler(this.btn_renew_Click);
             // 
+            // btn_paymentType
+            // 
+            this.btn_paymentType.Location = new System.Drawing.Point(224, 257);
+            this.btn_paymentType.Name = "btn_paymentType";
+            this.btn_paymentType.Size = new System.Drawing.Size(172, 73);
+            this.btn_paymentType.TabIndex = 2;
+            this.btn_paymentType.Text = "Tipo de Pago";
+            this.btn_paymentType.UseVisualStyleBackColor = true;
+            this.btn_paymentType.Click += new System.EventHandler(this.btn_paymentType_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(630, 430);
+            this.Controls.Add(this.btn_paymentType);
             this.Controls.Add(this.btn_renew);
             this.Controls.Add(this.btn_register);
             this.Name = "Form1";
@@ -69,6 +81,7 @@
 
         private System.Windows.Forms.Button btn_register;
         private System.Windows.Forms.Button btn_renew;
+        private System.Windows.Forms.Button btn_paymentType;
     }
 }
 

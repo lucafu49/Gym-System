@@ -45,6 +45,10 @@
             this.label8 = new System.Windows.Forms.Label();
             this.btn_register = new System.Windows.Forms.Button();
             this.btn_back = new System.Windows.Forms.Button();
+            this.txt_dni = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.cb_type = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -171,7 +175,7 @@
             // 
             // btn_register
             // 
-            this.btn_register.Location = new System.Drawing.Point(47, 256);
+            this.btn_register.Location = new System.Drawing.Point(45, 295);
             this.btn_register.Name = "btn_register";
             this.btn_register.Size = new System.Drawing.Size(122, 36);
             this.btn_register.TabIndex = 15;
@@ -181,7 +185,7 @@
             // 
             // btn_back
             // 
-            this.btn_back.Location = new System.Drawing.Point(284, 256);
+            this.btn_back.Location = new System.Drawing.Point(286, 295);
             this.btn_back.Name = "btn_back";
             this.btn_back.Size = new System.Drawing.Size(122, 36);
             this.btn_back.TabIndex = 16;
@@ -189,11 +193,52 @@
             this.btn_back.UseVisualStyleBackColor = true;
             this.btn_back.Click += new System.EventHandler(this.btn_back_Click);
             // 
+            // txt_dni
+            // 
+            this.txt_dni.Location = new System.Drawing.Point(24, 256);
+            this.txt_dni.Name = "txt_dni";
+            this.txt_dni.Size = new System.Drawing.Size(169, 20);
+            this.txt_dni.TabIndex = 18;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(21, 240);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(26, 13);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "DNI";
+            // 
+            // cb_type
+            // 
+            this.cb_type.FormattingEnabled = true;
+            this.cb_type.Items.AddRange(new object[] {
+            "Mes",
+            "Semana",
+            "Dia"});
+            this.cb_type.Location = new System.Drawing.Point(475, 61);
+            this.cb_type.Name = "cb_type";
+            this.cb_type.Size = new System.Drawing.Size(121, 21);
+            this.cb_type.TabIndex = 19;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(475, 45);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(50, 13);
+            this.label9.TabIndex = 20;
+            this.label9.Text = "Duracion";
+            // 
             // Register
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(466, 304);
+            this.ClientSize = new System.Drawing.Size(608, 343);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.cb_type);
+            this.Controls.Add(this.txt_dni);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.btn_back);
             this.Controls.Add(this.btn_register);
             this.Controls.Add(this.txt_injury);
@@ -237,5 +282,9 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button btn_register;
         private System.Windows.Forms.Button btn_back;
+        private System.Windows.Forms.TextBox txt_dni;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox cb_type;
+        private System.Windows.Forms.Label label9;
     }
 }
