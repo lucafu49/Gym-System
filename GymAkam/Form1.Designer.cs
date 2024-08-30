@@ -61,7 +61,6 @@
             this.btn_paymentType.TabIndex = 2;
             this.btn_paymentType.Text = "Tipo de Pago";
             this.btn_paymentType.UseVisualStyleBackColor = true;
-            this.btn_paymentType.Click += new System.EventHandler(this.btn_paymentType_Click);
             // 
             // Form1
             // 

@@ -36,11 +36,5 @@ namespace GymAkam
             Contabilidad c = new Contabilidad();
             c.Show();
         }
-
-        private void btn_paymentType_Click(object sender, EventArgs e)
-        {
-            PaymentType p = new PaymentType();
-            p.Show();
-        }
     }
 }

@@ -47,14 +47,16 @@
             this.btn_back = new System.Windows.Forms.Button();
             this.txt_dni = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.cb_type = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
+            this.txt_expirationDate = new System.Windows.Forms.TextBox();
+            this.txt_mount = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(181, 20);
+            this.label1.Location = new System.Drawing.Point(189, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(84, 13);
             this.label1.TabIndex = 0;
@@ -161,7 +163,7 @@
             this.txt_injury.Location = new System.Drawing.Point(266, 164);
             this.txt_injury.Multiline = true;
             this.txt_injury.Name = "txt_injury";
-            this.txt_injury.Size = new System.Drawing.Size(169, 67);
+            this.txt_injury.Size = new System.Drawing.Size(169, 112);
             this.txt_injury.TabIndex = 14;
             // 
             // label8
@@ -209,34 +211,47 @@
             this.label6.TabIndex = 17;
             this.label6.Text = "DNI";
             // 
-            // cb_type
-            // 
-            this.cb_type.FormattingEnabled = true;
-            this.cb_type.Items.AddRange(new object[] {
-            "Mes",
-            "Semana",
-            "Dia"});
-            this.cb_type.Location = new System.Drawing.Point(475, 61);
-            this.cb_type.Name = "cb_type";
-            this.cb_type.Size = new System.Drawing.Size(121, 21);
-            this.cb_type.TabIndex = 19;
-            // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(475, 45);
+            this.label9.Location = new System.Drawing.Point(448, 45);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(50, 13);
+            this.label9.Size = new System.Drawing.Size(172, 13);
             this.label9.TabIndex = 20;
-            this.label9.Text = "Duracion";
+            this.label9.Text = "FechaVencimiento (AAAA-MM-DD)";
+            // 
+            // txt_expirationDate
+            // 
+            this.txt_expirationDate.Location = new System.Drawing.Point(451, 62);
+            this.txt_expirationDate.Name = "txt_expirationDate";
+            this.txt_expirationDate.Size = new System.Drawing.Size(169, 20);
+            this.txt_expirationDate.TabIndex = 21;
+            // 
+            // txt_mount
+            // 
+            this.txt_mount.Location = new System.Drawing.Point(451, 113);
+            this.txt_mount.Name = "txt_mount";
+            this.txt_mount.Size = new System.Drawing.Size(169, 20);
+            this.txt_mount.TabIndex = 23;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(448, 97);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(37, 13);
+            this.label10.TabIndex = 22;
+            this.label10.Text = "Monto";
             // 
             // Register
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(608, 343);
+            this.ClientSize = new System.Drawing.Size(632, 343);
+            this.Controls.Add(this.txt_mount);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.txt_expirationDate);
             this.Controls.Add(this.label9);
-            this.Controls.Add(this.cb_type);
             this.Controls.Add(this.txt_dni);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.btn_back);
@@ -284,7 +299,9 @@
         private System.Windows.Forms.Button btn_back;
         private System.Windows.Forms.TextBox txt_dni;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.ComboBox cb_type;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox txt_expirationDate;
+        private System.Windows.Forms.TextBox txt_mount;
+        private System.Windows.Forms.Label label10;
     }
 }

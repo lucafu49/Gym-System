@@ -19,9 +19,48 @@ namespace GymAkam
             InitializeComponent();
         }
 
+        private int? searchClientByDNI(string dni)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["GymAkam.Properties.Settings.GymAkamConnectionString"].ConnectionString;
+
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT ClienteID FROM Cliente WHERE DNI = @DNI";
+
+                    connection.Open();
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@DNI", dni);
+
+                        object result = command.ExecuteScalar();
+
+                        if (result != null)
+                        {
+                            return Convert.ToInt32(result); // Devuelve el ID del cliente encontrado
+                        }
+                        else
+                        {
+                            return null; // No se encontró ningún cliente con ese DNI
+                        }
+                    }
+                }
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
+        }
+
+
         private void btn_register_Click(object sender, EventArgs e)
         {
-
             if (string.IsNullOrWhiteSpace(txt_name.Text) ||
                 string.IsNullOrWhiteSpace(txt_surname.Text) ||
                 string.IsNullOrWhiteSpace(txt_birthDate.Text) ||
@@ -36,27 +75,40 @@ namespace GymAkam
 
             string connectionString = ConfigurationManager.ConnectionStrings["GymAkam.Properties.Settings.GymAkamConnectionString"].ConnectionString;
 
-            // Usa la cadena de conexión para conectarte a la base de datos
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 try
                 {
-                    string query = "INSERT INTO Cliente (Nombre, Apellido,DNI, FechaNacimiento, Genero, Telefono, Direccion, FechadePago, Lesiones) VALUES (@Nombre, @Apellido, @FechaNacimiento, @Genero, @Telefono, @Direccion, @FechadePago, @Lesiones)";
+                    string query = "INSERT INTO Cliente (Nombre, Apellido, DNI, FechaNacimiento, Genero, Telefono, Direccion, Lesiones) VALUES (@Nombre, @Apellido, @DNI, @FechaNacimiento, @Genero, @Telefono, @Direccion, @Lesiones)";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Nombre", txt_name.Text);
                         command.Parameters.AddWithValue("@Apellido", txt_surname.Text);
+                        command.Parameters.AddWithValue("@DNI", txt_dni.Text); // Agregado el parámetro @DNI
                         command.Parameters.AddWithValue("@FechaNacimiento", txt_birthDate.Text);
                         command.Parameters.AddWithValue("@Genero", txt_genre.Text);
                         command.Parameters.AddWithValue("@Telefono", txt_phone.Text);
                         command.Parameters.AddWithValue("@Direccion", txt_address.Text);
-                        command.Parameters.AddWithValue("@FechadePago", DateTime.Now);
                         command.Parameters.AddWithValue("@Lesiones", txt_injury.Text);
 
                         connection.Open();
                         command.ExecuteNonQuery();
                         MessageBox.Show("Cliente registrado exitosamente");
+                    }
+
+                    string queryDate = "INSERT INTO Transacciones (IDCliente, Monto, FechaPago, FechaVencimiento) VALUES (@IDCliente, @Monto, @FechaPago, @FechaVencimiento)";
+                    var idSearch = searchClientByDNI(txt_dni.Text);
+
+                    using (SqlCommand command = new SqlCommand(queryDate, connection))
+                    {
+                        command.Parameters.AddWithValue("@IDCliente", idSearch);
+                        command.Parameters.AddWithValue("@Monto", txt_mount.Text);
+                        command.Parameters.AddWithValue("@FechaPago", DateTime.Now);
+                        command.Parameters.AddWithValue("@FechaVencimiento", txt_expirationDate.Text);
+
+                        command.ExecuteNonQuery();
+                        MessageBox.Show("Transacción registrada exitosamente");
                     }
                 }
                 catch (SqlException ex)
