@@ -93,17 +93,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contabilidad.cs">
+    <Compile Include="Cliente.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Contabilidad.Designer.cs">
-      <DependentUpon>Contabilidad.cs</DependentUpon>
+    <Compile Include="Cliente.Designer.cs">
+      <DependentUpon>Cliente.cs</DependentUpon>
     </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Ganancias.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Ganancias.Designer.cs">
+      <DependentUpon>Ganancias.cs</DependentUpon>
     </Compile>
     <Compile Include="GymAkamDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -118,11 +124,14 @@
     <Compile Include="Register.Designer.cs">
       <DependentUpon>Register.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Contabilidad.resx">
-      <DependentUpon>Contabilidad.cs</DependentUpon>
+    <EmbeddedResource Include="Cliente.resx">
+      <DependentUpon>Cliente.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Ganancias.resx">
+      <DependentUpon>Ganancias.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

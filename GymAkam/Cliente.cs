@@ -14,12 +14,12 @@ using System.Configuration;
 
 namespace GymAkam
 {
-    public partial class Contabilidad : Form
+    public partial class Cliente : Form
     {
 
         string connectionString = ConfigurationManager.ConnectionStrings["GymAkam.Properties.Settings.GymAkamConnectionString"].ConnectionString;
 
-        public Contabilidad()
+        public Cliente()
         {
             InitializeComponent();
             CargarClientesEnGridView();
@@ -33,7 +33,7 @@ namespace GymAkam
                 {
                     connection.Open();
 
-                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,FechadePago,Habilitado FROM Cliente WHERE Habilitado =0 ;";
+                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado =0 ;";
 
                     using (SqlDataAdapter dataAdapter = new SqlDataAdapter(query, connection))
                     {
@@ -56,8 +56,7 @@ namespace GymAkam
             txt_name.Text = dt_client.SelectedCells[1].Value.ToString();
             txt_surname.Text = dt_client.SelectedCells[2].Value.ToString();
             txt_dni.Text = dt_client.SelectedCells[3].Value.ToString();
-            txt_paymentDay.Text = dt_client.SelectedCells[4].Value.ToString();
-            txt_enabled.Text = dt_client.SelectedCells[5].Value.ToString();
+            txt_enabled.Text = dt_client.SelectedCells[4].Value.ToString();
         }
 
         private void btn_update_Click(object sender, EventArgs e)
@@ -145,7 +144,7 @@ namespace GymAkam
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,FechadePago,Habilitado FROM Cliente WHERE Habilitado = 0";
+                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado = 0";
 
                     if (!string.IsNullOrEmpty(txt_search.Text))
                     {

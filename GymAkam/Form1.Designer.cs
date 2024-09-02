@@ -55,12 +55,13 @@
             // 
             // btn_paymentType
             // 
-            this.btn_paymentType.Location = new System.Drawing.Point(224, 257);
+            this.btn_paymentType.Location = new System.Drawing.Point(230, 274);
             this.btn_paymentType.Name = "btn_paymentType";
             this.btn_paymentType.Size = new System.Drawing.Size(172, 73);
             this.btn_paymentType.TabIndex = 2;
-            this.btn_paymentType.Text = "Tipo de Pago";
+            this.btn_paymentType.Text = "Ingresos";
             this.btn_paymentType.UseVisualStyleBackColor = true;
+            this.btn_paymentType.Click += new System.EventHandler(this.btn_paymentType_Click);
             // 
             // Form1
             // 
