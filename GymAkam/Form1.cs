@@ -32,25 +32,28 @@ namespace GymAkam
                 {
                     connection.Open();
 
-                    // Consulta para deshabilitar clientes cuya fecha de pago ha vencido
-                    string query = "UPDATE Cliente SET Habilitado = 0 WHERE FechaVencimiento < @FechaActual AND Habilitado = 1;";
+                    // Consulta SQL que hace un JOIN entre las tablas y deshabilita clientes cuya fecha de vencimiento ha pasado
+                    string query = @"
+                    UPDATE Cliente
+                    SET Habilitado = 0
+                    FROM Cliente
+                    INNER JOIN Transacciones ON Cliente.ClienteID = Transacciones.IDCliente
+                    WHERE Transacciones.FechaVencimiento < GETDATE()";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@FechaActual", DateTime.Now);
-
                         int rowsAffected = command.ExecuteNonQuery();
 
                         if (rowsAffected > 0)
                         {
-                            MessageBox.Show($"{rowsAffected} cliente(s) han sido deshabilitados por vencimiento de la fecha de pago.", "Actualización", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show($"{rowsAffected} cliente(s) deshabilitado(s) correctamente.", "Clientes Deshabilitados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al deshabilitar clientes vencidos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al deshabilitar clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

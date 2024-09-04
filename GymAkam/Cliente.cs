@@ -33,7 +33,26 @@ namespace GymAkam
                 {
                     connection.Open();
 
-                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado =0 ;";
+                    string query = @"
+                SELECT 
+                    c.ClienteID,
+                    c.Nombre,
+                    c.Apellido,
+                    c.DNI,
+                    c.Habilitado,
+                    MAX(t.FechaVencimiento) AS UltimaFechaVencimiento
+                FROM 
+                    Cliente c
+                LEFT JOIN 
+                    Transacciones t ON c.ClienteID = t.IDCliente
+                WHERE 
+                    c.Habilitado = 0
+                GROUP BY 
+                    c.ClienteID,
+                    c.Nombre,
+                    c.Apellido,
+                    c.DNI,
+                    c.Habilitado;";
 
                     using (SqlDataAdapter dataAdapter = new SqlDataAdapter(query, connection))
                     {
@@ -144,11 +163,11 @@ namespace GymAkam
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado = 0";
+                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente";
 
                     if (!string.IsNullOrEmpty(txt_search.Text))
                     {
-                        query += " AND DNI = @DNIsearch";
+                        query += " WHERE DNI = @DNIsearch";
                     }
 
                     connection.Open();
@@ -173,6 +192,120 @@ namespace GymAkam
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string value = comboBox1.SelectedItem.ToString();
+
+            switch (value)
+            {
+                case "Habilitados":
+                    try
+                    {
+                        using (SqlConnection connection = new SqlConnection(connectionString))
+                        {
+                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado = 1";
+
+                            connection.Open();
+
+                            using (SqlCommand command = new SqlCommand(query, connection))
+                            {
+                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
+                                {
+                                    DataTable dataTable = new DataTable();
+                                    dataAdapter.Fill(dataTable);
+
+                                    dt_client.DataSource = dataTable;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    break;
+                case "Vencidos":
+                    try
+                    {
+                        using (SqlConnection connection = new SqlConnection(connectionString))
+                        {
+                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado = 0";
+
+                            connection.Open();
+
+                            using (SqlCommand command = new SqlCommand(query, connection))
+                            {
+                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
+                                {
+                                    DataTable dataTable = new DataTable();
+                                    dataAdapter.Fill(dataTable);
+
+                                    dt_client.DataSource = dataTable;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    break;
+                case "Todos":
+                    try
+                    {
+                        using (SqlConnection connection = new SqlConnection(connectionString))
+                        {
+                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente";
+
+                            connection.Open();
+
+                            using (SqlCommand command = new SqlCommand(query, connection))
+                            {
+                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
+                                {
+                                    DataTable dataTable = new DataTable();
+                                    dataAdapter.Fill(dataTable);
+
+                                    dt_client.DataSource = dataTable;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    break;
+
+                default:
+                    try
+                    {
+                        using (SqlConnection connection = new SqlConnection(connectionString))
+                        {
+                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente";
+
+                            connection.Open();
+
+                            using (SqlCommand command = new SqlCommand(query, connection))
+                            {
+                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
+                                {
+                                    DataTable dataTable = new DataTable();
+                                    dataAdapter.Fill(dataTable);
+
+                                    dt_client.DataSource = dataTable;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    break;
             }
         }
     }
