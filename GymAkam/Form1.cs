@@ -32,13 +32,19 @@ namespace GymAkam
                 {
                     connection.Open();
 
-                    // Consulta SQL que hace un JOIN entre las tablas y deshabilita clientes cuya fecha de vencimiento ha pasado
+                    // Consulta SQL para deshabilitar clientes basándonos en la última transacción registrada
                     string query = @"
-                    UPDATE Cliente
-                    SET Habilitado = 0
-                    FROM Cliente
-                    INNER JOIN Transacciones ON Cliente.ClienteID = Transacciones.IDCliente
-                    WHERE Transacciones.FechaVencimiento < GETDATE()";
+                UPDATE Cliente
+                SET Habilitado = 0
+                FROM Cliente
+                INNER JOIN (
+                    SELECT IDCliente, MAX(IDTransaccion) AS UltimaTransaccionID
+                    FROM Transacciones
+                    GROUP BY IDCliente
+                ) AS UltimaTransaccion
+                ON Cliente.ClienteID = UltimaTransaccion.IDCliente
+                INNER JOIN Transacciones ON Transacciones.IDTransaccion = UltimaTransaccion.UltimaTransaccionID
+                WHERE Transacciones.FechaVencimiento < GETDATE()";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {

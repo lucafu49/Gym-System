@@ -25,7 +25,7 @@ namespace GymAkam
             CargarClientesEnGridView();
         }
 
-        private void CargarClientesEnGridView()
+        private void CargarClientesEnGridView(string whereClause = "", string searchText = "", bool? habilitado = null)
         {
             try
             {
@@ -34,32 +34,74 @@ namespace GymAkam
                     connection.Open();
 
                     string query = @"
-                SELECT 
-                    c.ClienteID,
-                    c.Nombre,
-                    c.Apellido,
-                    c.DNI,
-                    c.Habilitado,
-                    MAX(t.FechaVencimiento) AS UltimaFechaVencimiento
-                FROM 
-                    Cliente c
-                LEFT JOIN 
-                    Transacciones t ON c.ClienteID = t.IDCliente
-                WHERE 
-                    c.Habilitado = 0
-                GROUP BY 
-                    c.ClienteID,
-                    c.Nombre,
-                    c.Apellido,
-                    c.DNI,
-                    c.Habilitado;";
+            SELECT 
+                c.ClienteID,
+                c.Nombre,
+                c.Apellido,
+                c.DNI,
+                c.Habilitado,
+                t.FechaVencimiento AS UltimaFechaVencimiento
+            FROM 
+                Cliente c
+            LEFT JOIN 
+            (
+                SELECT IDCliente, FechaVencimiento
+                FROM Transacciones
+                WHERE IDTransaccion = (
+                    SELECT MAX(IDTransaccion)
+                    FROM Transacciones AS t2
+                    WHERE t2.IDCliente = Transacciones.IDCliente
+                )
+            ) AS t
+            ON c.ClienteID = t.IDCliente
+            ";
 
-                    using (SqlDataAdapter dataAdapter = new SqlDataAdapter(query, connection))
+                    // Construir el WHERE clause
+                    List<string> conditions = new List<string>();
+
+                    // Si hay texto de búsqueda (por Apellido o DNI)
+                    if (!string.IsNullOrEmpty(whereClause))
                     {
-                        DataTable dataTable = new DataTable();
-                        dataAdapter.Fill(dataTable);
+                        conditions.Add(whereClause);
+                    }
 
-                        dt_client.DataSource = dataTable;
+                    // Si hay un filtro de habilitación
+                    if (habilitado.HasValue)
+                    {
+                        conditions.Add($"c.Habilitado = {(habilitado.Value ? 1 : 0)}");
+                    }
+
+                    // Combinar todas las condiciones
+                    if (conditions.Count > 0)
+                    {
+                        query += " WHERE " + string.Join(" AND ", conditions);
+                    }
+
+                    query += @"
+            GROUP BY 
+                c.ClienteID,
+                c.Nombre,
+                c.Apellido,
+                c.DNI,
+                c.Habilitado,
+                t.FechaVencimiento;
+            ";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        // Añadir el parámetro de búsqueda si es necesario
+                        if (!string.IsNullOrEmpty(searchText))
+                        {
+                            command.Parameters.AddWithValue("@SearchText", searchText);
+                        }
+
+                        using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
+                        {
+                            DataTable dataTable = new DataTable();
+                            dataAdapter.Fill(dataTable);
+
+                            dt_client.DataSource = dataTable;
+                        }
                     }
                 }
             }
@@ -69,6 +111,7 @@ namespace GymAkam
             }
         }
 
+        //ASIGNAR DATOS DE CELDA EN textBox
         private void dt_client_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             txt_clientID.Text = dt_client.SelectedCells[0].Value.ToString();
@@ -78,6 +121,7 @@ namespace GymAkam
             txt_enabled.Text = dt_client.SelectedCells[4].Value.ToString();
         }
 
+        //RENOVAR CLIENTE
         private void btn_update_Click(object sender, EventArgs e)
         {
             try
@@ -86,39 +130,64 @@ namespace GymAkam
                 {
                     connection.Open();
 
-                    string query = "UPDATE Cliente SET Habilitado = 1, FechadePago = @DiaActual WHERE ClienteID = @ClienteID";
+                    // Comenzamos una transacción para asegurar que ambas operaciones se completen juntas.
+                    SqlTransaction transaction = connection.BeginTransaction();
 
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    try
                     {
-                        command.Parameters.AddWithValue("@DiaActual", DateTime.Now.Day);
-                        command.Parameters.AddWithValue("@ClienteID", txt_clientID.Text);
-
-                        int rowsAffected = command.ExecuteNonQuery();
-
-                        if (rowsAffected > 0)
+                        // 1. Actualizar el estado del cliente
+                        string updateQuery = "UPDATE Cliente SET Habilitado = 1 WHERE ClienteID = @ClienteID";
+                        using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection, transaction))
                         {
-                            MessageBox.Show("Cliente actualizado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            CargarClientesEnGridView();
+                            updateCommand.Parameters.AddWithValue("@ClienteID", txt_clientID.Text);
+                            int rowsAffected = updateCommand.ExecuteNonQuery();
+
+                            if (rowsAffected == 0)
+                            {
+                                throw new Exception("No se encontró ningún cliente con el ID especificado.");
+                            }
                         }
-                        else
+
+                        // 2. Insertar una nueva transacción
+                        string insertQuery = @"
+                    INSERT INTO Transacciones (IDCliente, Monto, FechaPago, FechaVencimiento) 
+                    VALUES (@IDCliente, @Monto, @FechaPago, @FechaVencimiento)";
+
+                        using (SqlCommand insertCommand = new SqlCommand(insertQuery, connection, transaction))
                         {
-                            MessageBox.Show("No se encontró ningún cliente con el ID especificado.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            insertCommand.Parameters.AddWithValue("@IDCliente", txt_clientID.Text);
+                            insertCommand.Parameters.AddWithValue("@Monto", txt_mount.Text); // Asumiendo que tienes un TextBox para el monto
+                            insertCommand.Parameters.AddWithValue("@FechaPago", DateTime.Now);
+
+                            // Asumiendo que tienes un TextBox para ingresar la fecha de vencimiento
+                            insertCommand.Parameters.AddWithValue("@FechaVencimiento", DateTime.Parse(txt_expirationDate.Text));
+
+                            insertCommand.ExecuteNonQuery();
                         }
+
+                        // Si ambas operaciones tuvieron éxito, hacemos commit a la transacción
+                        transaction.Commit();
+
+                        MessageBox.Show("Cliente actualizado correctamente y transacción registrada.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        CargarClientesEnGridView();
                     }
-
-
-
+                    catch (Exception ex)
+                    {
+                        // Si algo salió mal, hacemos rollback a la transacción
+                        transaction.Rollback();
+                        MessageBox.Show($"Error al actualizar el cliente o registrar la transacción: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
             catch (Exception ex)
             {
-
-                MessageBox.Show($"Error al actualizar el cliente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al conectar con la base de datos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
 
         }
 
+        //BORRAR POR ID
         private void txt_delete_Click(object sender, EventArgs e)
         {
 
@@ -157,156 +226,75 @@ namespace GymAkam
             }
         }
 
+        //BUSQUEDA
         private void btn_search_Click(object sender, EventArgs e)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente";
+                    string whereClause = "";
+                    string searchText = txt_search.Text;
+                    bool? habilitado = null; // Por defecto, no se filtra por habilitación
 
-                    if (!string.IsNullOrEmpty(txt_search.Text))
+                    // Verificar la opción seleccionada en el ComboBox de filtro
+                    if (cb_options.SelectedItem != null)
                     {
-                        query += " WHERE DNI = @DNIsearch";
+                        switch (cb_options.SelectedItem.ToString())
+                        {
+                            case "Buscar por DNI":
+                                whereClause = "c.DNI = @SearchText";
+                                break;
+
+                            case "Buscar por Apellido":
+                                whereClause = "c.Apellido LIKE @SearchText";
+                                searchText = $"%{searchText}%";
+                                break;
+
+                            default:
+                                MessageBox.Show("Seleccione una opción de búsqueda válida.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                        }
                     }
 
-                    connection.Open();
-
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    // Verificar el filtro de habilitación
+                    if (comboBox1.SelectedItem != null)
                     {
-                        if (!string.IsNullOrEmpty(txt_search.Text))
+                        switch (comboBox1.SelectedItem.ToString())
                         {
-                            command.Parameters.AddWithValue("@DNIsearch", txt_search.Text);
-                        }
+                            case "Habilitados":
+                                habilitado = true;
+                                break;
 
-                        using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
-                        {
-                            DataTable dataTable = new DataTable();
-                            dataAdapter.Fill(dataTable);
+                            case "Vencidos":
+                                habilitado = false;
+                                break;
 
-                            dt_client.DataSource = dataTable;
+                            case "Todos":
+                                habilitado = null; // No filtrar por habilitación
+                                break;
                         }
                     }
+
+                    // Llamar a CargarClientesEnGridView con ambos filtros
+                    CargarClientesEnGridView(whereClause, searchText, habilitado);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al buscar clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string value = comboBox1.SelectedItem.ToString();
+            btn_search_Click(sender, e);
+        }
 
-            switch (value)
-            {
-                case "Habilitados":
-                    try
-                    {
-                        using (SqlConnection connection = new SqlConnection(connectionString))
-                        {
-                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado = 1";
-
-                            connection.Open();
-
-                            using (SqlCommand command = new SqlCommand(query, connection))
-                            {
-                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
-                                {
-                                    DataTable dataTable = new DataTable();
-                                    dataAdapter.Fill(dataTable);
-
-                                    dt_client.DataSource = dataTable;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    break;
-                case "Vencidos":
-                    try
-                    {
-                        using (SqlConnection connection = new SqlConnection(connectionString))
-                        {
-                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente WHERE Habilitado = 0";
-
-                            connection.Open();
-
-                            using (SqlCommand command = new SqlCommand(query, connection))
-                            {
-                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
-                                {
-                                    DataTable dataTable = new DataTable();
-                                    dataAdapter.Fill(dataTable);
-
-                                    dt_client.DataSource = dataTable;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    break;
-                case "Todos":
-                    try
-                    {
-                        using (SqlConnection connection = new SqlConnection(connectionString))
-                        {
-                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente";
-
-                            connection.Open();
-
-                            using (SqlCommand command = new SqlCommand(query, connection))
-                            {
-                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
-                                {
-                                    DataTable dataTable = new DataTable();
-                                    dataAdapter.Fill(dataTable);
-
-                                    dt_client.DataSource = dataTable;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    break;
-
-                default:
-                    try
-                    {
-                        using (SqlConnection connection = new SqlConnection(connectionString))
-                        {
-                            string query = "SELECT ClienteID,Nombre,Apellido,DNI,Habilitado FROM Cliente";
-
-                            connection.Open();
-
-                            using (SqlCommand command = new SqlCommand(query, connection))
-                            {
-                                using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
-                                {
-                                    DataTable dataTable = new DataTable();
-                                    dataAdapter.Fill(dataTable);
-
-                                    dt_client.DataSource = dataTable;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error al cargar los clientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    break;
-            }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

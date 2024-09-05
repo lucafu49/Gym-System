@@ -19,6 +19,34 @@ namespace GymAkam
             InitializeComponent();
         }
 
+        private bool DNIRepetido(string dni)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["GymAkam.Properties.Settings.GymAkamConnectionString"].ConnectionString;
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT COUNT(*) FROM Cliente WHERE DNI = @DNI";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@DNI", dni);
+                        connection.Open();
+                        int count = Convert.ToInt32(command.ExecuteScalar());
+
+                        // Si el count es mayor a 0, significa que el DNI ya existe
+                        return count > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al verificar el DNI: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
         private int? searchClientByDNI(string dni)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["GymAkam.Properties.Settings.GymAkamConnectionString"].ConnectionString;
@@ -67,9 +95,17 @@ namespace GymAkam
                 string.IsNullOrWhiteSpace(txt_genre.Text) ||
                 string.IsNullOrWhiteSpace(txt_phone.Text) ||
                 string.IsNullOrWhiteSpace(txt_address.Text) ||
-                string.IsNullOrWhiteSpace(txt_injury.Text))
+                string.IsNullOrWhiteSpace(txt_injury.Text) ||
+                string.IsNullOrWhiteSpace(txt_dni.Text))
             {
                 MessageBox.Show("Por favor, completa todos los campos antes de registrar al cliente.", "Campos Vacíos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Verificamos si el DNI ya está registrado
+            if (DNIRepetido(txt_dni.Text))
+            {
+                MessageBox.Show("El DNI ingresado ya está registrado. Por favor, verifica los datos.", "DNI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -79,13 +115,14 @@ namespace GymAkam
             {
                 try
                 {
+                    // Consulta para insertar un nuevo cliente
                     string query = "INSERT INTO Cliente (Nombre, Apellido, DNI, FechaNacimiento, Genero, Telefono, Direccion, Lesiones) VALUES (@Nombre, @Apellido, @DNI, @FechaNacimiento, @Genero, @Telefono, @Direccion, @Lesiones)";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Nombre", txt_name.Text);
                         command.Parameters.AddWithValue("@Apellido", txt_surname.Text);
-                        command.Parameters.AddWithValue("@DNI", txt_dni.Text); // Agregado el parámetro @DNI
+                        command.Parameters.AddWithValue("@DNI", txt_dni.Text);
                         command.Parameters.AddWithValue("@FechaNacimiento", txt_birthDate.Text);
                         command.Parameters.AddWithValue("@Genero", txt_genre.Text);
                         command.Parameters.AddWithValue("@Telefono", txt_phone.Text);
@@ -95,20 +132,21 @@ namespace GymAkam
                         connection.Open();
                         command.ExecuteNonQuery();
                         MessageBox.Show("Cliente registrado exitosamente");
-                    }
 
-                    string queryDate = "INSERT INTO Transacciones (IDCliente, Monto, FechaPago, FechaVencimiento) VALUES (@IDCliente, @Monto, @FechaPago, @FechaVencimiento)";
-                    var idSearch = searchClientByDNI(txt_dni.Text);
+                        // Registrar la transacción
+                        string queryDate = "INSERT INTO Transacciones (IDCliente, Monto, FechaPago, FechaVencimiento) VALUES (@IDCliente, @Monto, @FechaPago, @FechaVencimiento)";
+                        var idSearch = searchClientByDNI(txt_dni.Text);
 
-                    using (SqlCommand command = new SqlCommand(queryDate, connection))
-                    {
-                        command.Parameters.AddWithValue("@IDCliente", idSearch);
-                        command.Parameters.AddWithValue("@Monto", txt_mount.Text);
-                        command.Parameters.AddWithValue("@FechaPago", DateTime.Now);
-                        command.Parameters.AddWithValue("@FechaVencimiento", txt_expirationDate.Text);
+                        using (SqlCommand commandDate = new SqlCommand(queryDate, connection))
+                        {
+                            commandDate.Parameters.AddWithValue("@IDCliente", idSearch);
+                            commandDate.Parameters.AddWithValue("@Monto", txt_mount.Text);
+                            commandDate.Parameters.AddWithValue("@FechaPago", DateTime.Now);
+                            commandDate.Parameters.AddWithValue("@FechaVencimiento", txt_expirationDate.Text);
 
-                        command.ExecuteNonQuery();
-                        MessageBox.Show("Transacción registrada exitosamente");
+                            commandDate.ExecuteNonQuery();
+                            MessageBox.Show("Transacción registrada exitosamente");
+                        }
                     }
                 }
                 catch (SqlException ex)
